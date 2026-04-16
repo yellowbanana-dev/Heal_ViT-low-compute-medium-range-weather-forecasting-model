@@ -1,0 +1,44 @@
+# Model hyper-parameters and data paths
+
+data:
+  zarr_path: "/home/bedartha/public/datasets/as_downloaded/weatherbench2/era5/1959-2023_01_10-6h-240x121_equiangular_with_poles_conservative.zarr"
+  h_grid: 121
+  w_grid: 240
+  train_years: [1979, 2018]
+  val_years: [2019, 2020]
+  surface_vars:
+    - '2m_temperature'
+    - '10m_u_component_of_wind'
+    - '10m_v_component_of_wind'
+    - 'mean_sea_level_pressure'
+    - 'total_column_water_vapour'
+  level_vars:
+    - 'temperature'
+    - 'geopotential'
+    - 'specific_humidity'
+    - 'u_component_of_wind'
+    - 'v_component_of_wind'
+  pressure_levels:
+    - 850
+    - 500
+    - 250
+
+model:
+  edge_embed_dim: 32
+  embed_dim: 128
+  mesh_dim: 128
+  num_heads: 4
+  mlp_ratio: 4.0
+  drop_rate: 0.0
+  num_bottleneck_layers: 48
+  use_checkpoint: true
+
+training:
+  per_gpu_batch_size: 1
+  accumulation_steps: 4
+  use_amp: true
+  base_lr: 2.5e-4
+  finetune_lr: 1.0e-7
+  weight_decay: 0.1
+  curriculum_steps: [1, 60]
+  epochs_per_stage: [11, 1]

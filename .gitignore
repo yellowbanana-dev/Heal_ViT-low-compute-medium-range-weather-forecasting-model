@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.pt
+*.out
+*.err
+*slurm*
+Data_Cache/
+Checkpoints/
+Disposable_Files/
+plots_data/
+*.png
+*.pdf
+
+# Only ignore evaluate metrics, not config jsons if any
+evaluate_metrics.json
