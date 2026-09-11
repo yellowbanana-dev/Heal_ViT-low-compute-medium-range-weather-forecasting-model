@@ -19,7 +19,8 @@ and remains numerically stable through a **60-step / 15-day** autoregressive rol
 <p align="center">
   <img src="figures/acc_average_48L_vs_6L.png" width="85%" alt="Mean anomaly correlation vs lead time, 48-layer against 6-layer"><br>
   <em>Mean anomaly correlation against lead time — the 48-layer model (this repo) against an
-  otherwise identical 6-layer ablation.</em>
+  otherwise identical 6-layer ablation. Averaged over 19 variables; MSLP is excluded for the
+  reason given under <a href="#known-issues">Known issues</a>.</em>
 </p>
 
 ---
@@ -44,6 +45,20 @@ against the WeatherBench 2 1990–2019 hourly climatology.
 
 Full per-variable tables for all 20 variables and all 60 lead times: **[docs/RESULTS.md](docs/RESULTS.md)**.
 
+<p align="center">
+  <img src="figures/acc_7day_average.png" width="80%" alt="Mean ACC over the first seven forecast days"><br>
+  <em>The operationally interesting window. Mean skill crosses the 0.6 threshold at
+  6.1 days; individual variables range from 3.75 d (250 hPa specific humidity) to
+  7.5 d (500 and 250 hPa geopotential).</em>
+</p>
+
+<p align="center">
+  <img src="figures/acc_7day_all_vars.png" width="100%" alt="Per-variable ACC over seven days for all twenty variables"><br>
+  <em>All 20 variables individually, out to 7 days. Geopotential decays slowest, specific
+  humidity fastest — the expected ordering, since moisture is governed by small-scale
+  processes the mesh cannot resolve.</em>
+</p>
+
 ### Depth pays off: 48 layers vs 6 layers
 
 Same data, same graph, same optimiser and curriculum — only `num_bottleneck_layers` changes.
@@ -58,10 +73,31 @@ Deeper wins at every lead time, and the gap widens as the forecast runs out.
 Z500 skill horizon moves from 6.75 d → **7.50 d**; 2 m temperature from 4.75 d → **6.00 d**.
 
 <p align="center">
-  <img src="figures/target_pred_error_z500_120h.png" width="95%" alt="ERA5 truth, model forecast and error for 500 hPa geopotential at 120 hours"><br>
+  <img src="figures/acc_all_vars_48L_vs_6L.png" width="100%" alt="Per-variable ACC to 15 days, 48-layer against 6-layer"><br>
+  <em>ACC to 15 days, every variable, 48 layers in red against 6 layers in blue. The deeper
+  model is ahead in all 20 panels — the gain is systematic, not a lucky variable or two.</em>
+</p>
+
+<p align="center">
+  <img src="figures/rmse_all_vars_48L_vs_6L.png" width="100%" alt="Per-variable RMSE to 15 days, 48-layer against 6-layer"><br>
+  <em>The same comparison in RMSE, physical units. The curves separate early and stay
+  separated, so the depth advantage is not merely a slower saturation toward climatology.</em>
+</p>
+
+### Forecast fields
+
+<p align="center">
+  <img src="figures/target_pred_error_z500_120h.png" width="100%" alt="ERA5 truth, model forecast and error for 500 hPa geopotential at 120 hours"><br>
   <em>500 hPa geopotential at a 5-day lead: ERA5 truth, forecast, and error. The model keeps
   the planetary wave structure and Rossby wave phase; the error is concentrated in
   mid-latitude storm tracks.</em>
+</p>
+
+<p align="center">
+  <img src="figures/target_pred_error_t2m_72h.png" width="100%" alt="ERA5 truth, model forecast and error for 2 metre temperature at 72 hours"><br>
+  <em>2 m temperature at a 3-day lead. Land–sea contrast and the continental cold pools are
+  reproduced; residual error follows coastlines and orography, where the 121 × 240 grid
+  limits how sharp a gradient the model can represent.</em>
 </p>
 
 ### Spectral behaviour
@@ -80,6 +116,25 @@ to 15 days rather than blurring toward the mean or blowing up — the usual fail
 autoregressive forecast models. It does under-represent sub-synoptic variance, the expected
 consequence of training on an RMSE objective, most strongly for upper-level winds. See
 [Known issues](#known-issues).
+
+<p align="center">
+  <img src="figures/power_spectra_overlay.png" width="100%" alt="Zonal energy spectra for four variables at six lead times, ERA5 against both models"><br>
+  <em>Zonal energy spectra on log–log axes — ERA5 in black, 48 layers in red, 6 layers in
+  blue — for four representative variables across six lead times. Both models track ERA5
+  closely at planetary and synoptic wavenumbers and fall away at the tail. Neither shows the
+  runaway energy growth that destabilises autoregressive rollouts, which is what keeps the
+  15-day forecast usable — though geopotential does carry excess power in the far tail
+  (<a href="#known-issues">Known issues</a>).</em>
+</p>
+
+<p align="center">
+  <img src="figures/power_spectra_ratio.png" width="100%" alt="Ratio of model to ERA5 spectral energy across wavenumbers"><br>
+  <em>The same data as a ratio to ERA5, where 1.0 is perfect. This is the more honest view.
+  The deeper model holds more energy at planetary wavenumbers (5–20) in every variable and at
+  every lead time tested — it is not buying its lower RMSE by smoothing. At the sub-synoptic
+  tail the picture is mixed and the ratio there is a poor guide, since ERA5's own power is
+  very small.</em>
+</p>
 
 ---
 
@@ -210,10 +265,16 @@ Stated plainly, because the numbers above should be read with them in mind.
    wavenumbers 60–120). This is the standard consequence of an RMSE objective and affects the
    realism of small-scale structure, not large-scale skill. A spectral or adversarial loss
    term would be the route to addressing it.
-3. **No operational baseline.** Skill is reported against climatology, not against IFS HRES or
+3. **Geopotential carries excess grid-scale energy.** At wavenumbers 60–120 the predicted
+   Z500 spectrum sits roughly 7× above ERA5 at every lead time (worse in the 6-layer model,
+   ~7.5×). ERA5's own power is very small there, so the absolute magnitude is minor and it
+   does not destabilise the rollout, but the signature is consistent with grid-scale noise
+   entering through the mesh→grid decoder. Worth a look at the `M2G` k=4 neighbour
+   interpolation before trusting fine-scale geopotential structure.
+4. **No operational baseline.** Skill is reported against climatology, not against IFS HRES or
    ERA5 persistence, so these numbers are not yet directly comparable to the WeatherBench 2
    leaderboard.
-4. **Single validation split**, no ensemble or seed spread, so the 48L-vs-6L gap is a single
+5. **Single validation split**, no ensemble or seed spread, so the 48L-vs-6L gap is a single
    paired comparison rather than a significance-tested result.
 
 ## Citation
