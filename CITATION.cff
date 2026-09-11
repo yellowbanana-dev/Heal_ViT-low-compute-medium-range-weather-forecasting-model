@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+title: "HEAL-ViT: A 48-layer HEALPix Shifted-Window Transformer for Global Weather Forecasting"
+message: "If you use this software or its results, please cite it as below."
+type: software
+authors:
+  - family-names: Bharat
+    email: bharatscience111@gmail.com
+repository-code: "https://github.com/<your-username>/heal-vit"
+abstract: >-
+  A data-driven global weather model combining an equal-area HEALPix icosahedral
+  mesh with a 48-layer shifted-window vision transformer and graph neural network
+  encoder/decoder. Trained on 40 years of ERA5 (1979-2018) at 6-hourly, 121x240
+  resolution over 20 atmospheric variables, with autoregressive rollout
+  fine-tuning. Retains skill (ACC > 0.6) to 7.5 days for 500 hPa geopotential and
+  remains spectrally stable through a 15-day rollout.
+keywords:
+  - weather forecasting
+  - vision transformer
+  - graph neural network
+  - HEALPix
+  - ERA5
+  - WeatherBench 2
+license: MIT
+version: "1.0.0"
+date-released: "2026-09-11"

@@ -18,9 +18,10 @@ from Core.model import HEALViTModel
 from Core.graph import HealpixGraphGenerator
 from Core.metrics import get_latitude_weights, ACCMetric
 from train import setup_distributed, cleanup_distributed
+from Core.paths import CONFIG_PATH, checkpoint
 
 def run_evaluation():
-    config = load_config('../config.yaml')
+    config = load_config(CONFIG_PATH)
     global_rank, local_rank, world_size = setup_distributed()
     is_master = (global_rank == 0)
     device = torch.device(f"cuda:{local_rank}" if torch.cuda.is_available() else "cpu")
@@ -40,7 +41,7 @@ def run_evaluation():
     if world_size > 1:
         model = DDP(model, device_ids=[local_rank], output_device=local_rank)
         
-    ckpt_path = "../healvit_wb2_ar6.pt" # This is the last checkpoint observed
+    ckpt_path = checkpoint()  # final curriculum stage
     if is_master: print(f"Loading checkpoint {ckpt_path}...", flush=True)
     
     # Safely load the state dict regardless of DDP structure

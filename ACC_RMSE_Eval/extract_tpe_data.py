@@ -8,9 +8,10 @@ from Data_Config.config import load_config
 from Data_Config.data import ERA5ZarrDataset, compute_normalization_stats
 from Core.model import HEALViTModel
 from Core.graph import HealpixGraphGenerator
+from Core.paths import CONFIG_PATH, checkpoint
 
 def main():
-    config = load_config('../config.yaml')
+    config = load_config(CONFIG_PATH)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     norm_stats = compute_normalization_stats(config)
@@ -19,7 +20,7 @@ def main():
     
     model = HEALViTModel(config, graph_data).to(device)
     
-    ckpt_path = "../healvit_wb2_ar6.pt"
+    ckpt_path = checkpoint()
     print(f"Loading {ckpt_path}...")
     ckpt = torch.load(ckpt_path, map_location=device, weights_only=True)
     state_dict = ckpt['model_state_dict'] if 'model_state_dict' in ckpt else ckpt

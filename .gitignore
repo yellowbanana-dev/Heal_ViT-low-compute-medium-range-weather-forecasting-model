@@ -1,16 +1,32 @@
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Model weights and cached data — too large for git
 *.pt
-*.out
-*.err
-*slurm*
 Data_Cache/
 Checkpoints/
 Disposable_Files/
-plots_data/
+
+# Cluster job output
+*.out
+*.err
+*slurm*
+log_files/
+
+# Large intermediate evaluation artefacts
+*.nc
+*.npz
+
+# Figures are ignored by default; the curated set in figures/ is tracked.
 *.png
 *.pdf
+!figures/*.png
 
-# Only ignore evaluate metrics, not config jsons if any
+# Raw evaluation dumps stay out of git; the curated copies in results/ are tracked.
 evaluate_metrics.json
+ACC_RMSE_Eval/plots_data/
+Power_Spectra/spectra_metrics.json
+
+# Raw evaluation CSVs; curated copies live in results/
+ACC_RMSE_Eval/*.csv

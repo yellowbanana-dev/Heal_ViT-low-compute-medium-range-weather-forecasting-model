@@ -12,6 +12,7 @@ from Data_Config.data import ERA5ZarrDataset, compute_normalization_stats
 from Core.model import HEALViTModel
 from Core.graph import HealpixGraphGenerator
 from Data_Config.config import load_config
+from Core.paths import CONFIG_PATH, checkpoint
 
 def setup_evaluation():
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -90,6 +91,6 @@ def evaluate_rollout(config, checkpoint_path, max_ar_steps=60):
         print(f"Step {k+1:02d} (+{6*(k+1):02d}h): RMSE Loss = {step_losses[k].item():.5f}")
 
 if __name__ == "__main__":
-    config = load_config("config.yaml")
-    checkpoint_file = "healvit_wb2_ar1.pt"
+    config = load_config(CONFIG_PATH)
+    checkpoint_file = checkpoint(1)
     evaluate_rollout(config, checkpoint_file, max_ar_steps=60)

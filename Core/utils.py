@@ -4,7 +4,8 @@ import torch
 def save_checkpoint(ckpt_path, model, optimizer, scheduler, epoch, curriculum_stage, completed_stages):
     """Save training states including model, optimizer, scheduler, and curriculum status for fault tolerance."""
     print(f"Saving checkpoint to {ckpt_path}...")
-    
+    os.makedirs(os.path.dirname(os.path.abspath(ckpt_path)), exist_ok=True)
+
     # Extract underlying model if wrapped in DDP
     model_state = model.module.state_dict() if hasattr(model, 'module') else model.state_dict()
     

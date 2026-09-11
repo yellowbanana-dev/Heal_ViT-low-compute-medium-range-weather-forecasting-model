@@ -28,6 +28,7 @@ from Core.model import HEALViTModel
 from Core.graph import HealpixGraphGenerator
 from train import setup_distributed, cleanup_distributed
 from power_spectra import latitude_averaged_spectrum
+from Core.paths import CONFIG_PATH, checkpoint
 
 # ---- Configuration -------------------------------------------------------
 # AR steps (1-indexed) at which spectra are computed
@@ -40,7 +41,7 @@ MAX_BATCHES = None
 
 def run_spectra_evaluation():
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    config_path = os.path.join(script_dir, '..', 'config.yaml')
+    config_path = CONFIG_PATH
     config = load_config(config_path)
 
     global_rank, local_rank, world_size = setup_distributed()
@@ -65,7 +66,7 @@ def run_spectra_evaluation():
     if world_size > 1:
         model = DDP(model, device_ids=[local_rank], output_device=local_rank)
 
-    ckpt_path = "../healvit_wb2_ar6.pt"
+    ckpt_path = checkpoint()
     if is_master:
         print(f"Loading checkpoint {ckpt_path}...", flush=True)
 

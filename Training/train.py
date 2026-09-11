@@ -16,6 +16,7 @@ from Core.metrics import LatitudeWeightedRMSELoss, get_latitude_weights, ACCMetr
 from Data_Config.data import ERA5ZarrDataset, compute_normalization_stats, load_climatology
 from Core.model import HEALViTModel
 from Core.graph import HealpixGraphGenerator
+from Core.paths import CONFIG_PATH, checkpoint
 
 def setup_distributed():
     if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
@@ -207,7 +208,7 @@ def train_model(config):
     latest_checkpoint = None
     
     for steps in config.curriculum_steps:
-        ckpt_path = f"healvit_wb2_ar{steps}.pt"
+        ckpt_path = checkpoint(steps)
         if os.path.exists(ckpt_path):
             latest_checkpoint = ckpt_path
 
@@ -306,7 +307,7 @@ def train_model(config):
         if is_master:
             print(f"Validation Loss (Stage {num_ar_steps}AR): {val_loss:.5f} | ACC: {val_acc:.5f}", flush=True)
             completed_stages.append(num_ar_steps)
-            save_checkpoint(f"healvit_wb2_ar{num_ar_steps}.pt", model, optimizer, scheduler, epoch=0, curriculum_stage=stage_idx+1, completed_stages=completed_stages)
+            save_checkpoint(checkpoint(num_ar_steps), model, optimizer, scheduler, epoch=0, curriculum_stage=stage_idx+1, completed_stages=completed_stages)
             
     if is_master: 
         print("\n" + "="*60, flush=True)
