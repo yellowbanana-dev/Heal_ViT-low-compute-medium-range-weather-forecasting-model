@@ -223,7 +223,7 @@ Stated plainly, because the numbers above should be read with them in mind.
   author = {Bharat},
   title  = {HEAL-ViT: A 48-layer HEALPix Shifted-Window Transformer for Global Weather Forecasting},
   year   = {2026},
-  url    = {https://github.com/<your-username>/heal-vit}
+  url    = {https://github.com/yellowbanana-dev/Heal_ViT-48-layers}
 }
 ```
 
